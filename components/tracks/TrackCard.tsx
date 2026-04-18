@@ -130,41 +130,39 @@ export function TrackCard({
   return (
     <Card
       data-testid="track-card"
-      className="h-full rounded-[28px] border border-white/10 bg-white/[0.03] text-neutral-100 ring-0"
-      >
-        <CardHeader className="gap-4 p-4">
-        <div className="relative aspect-square overflow-hidden rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_42%),linear-gradient(135deg,_rgba(255,255,255,0.05),_rgba(255,255,255,0.01))]">
+      className="group h-full rounded-2xl border border-white/[0.06] bg-[#0f0f0f]/60 text-neutral-100 transition-all duration-300 hover:border-white/[0.1] hover:bg-[#0f0f0f]/80"
+    >
+      <CardHeader className="gap-4 p-4">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-neutral-900/50">
           {track.album_art ? (
-            // Album art can come from arbitrary Spotify/CDN hosts, so a native img is safer here.
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={track.album_art}
               alt={`${track.name} cover art`}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-neutral-500">
+            <div className="flex h-full items-center justify-center text-neutral-600">
               <Disc3 className="size-10" />
             </div>
           )}
-          <div className="absolute left-3 top-3">
+          <div className="absolute left-2.5 top-2.5">
             <Badge
               variant="outline"
-              className="border-white/10 bg-black/45 text-[11px] uppercase tracking-[0.18em] text-neutral-200"
+              className="border-white/[0.08] bg-black/50 backdrop-blur-sm text-[10px] uppercase tracking-[0.15em] text-neutral-300"
             >
-              {similarity}% match
+              {similarity}%
             </Badge>
           </div>
         </div>
-        <div className="space-y-2">
-          <CardTitle className="text-lg font-medium tracking-tight text-white">
+        <div className="space-y-1.5">
+          <CardTitle className="text-base font-medium tracking-tight text-white line-clamp-1">
             {track.name}
           </CardTitle>
-          <p className="text-sm text-neutral-400">{track.artist}</p>
+          <p className="text-sm text-neutral-500 line-clamp-1">{track.artist}</p>
         </div>
       </CardHeader>
       <CardContent
-        className="space-y-3 px-4 pb-0 text-sm text-neutral-300"
+        className="space-y-3 px-4 pb-0 text-sm text-neutral-400 cursor-pointer"
         onClick={() => void toggleExplanation()}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -176,59 +174,59 @@ export function TrackCard({
         tabIndex={0}
         aria-expanded={expanded}
       >
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {track.valence != null ? (
             <Badge
               variant="outline"
-              className="border-white/10 bg-white/[0.02] text-neutral-300"
+              className="border-white/[0.04] bg-white/[0.02] text-[10px] text-neutral-500"
             >
-              Valence {track.valence.toFixed(2)}
+              {(track.valence * 100).toFixed(0)}% valence
             </Badge>
           ) : null}
           {track.energy != null ? (
             <Badge
               variant="outline"
-              className="border-white/10 bg-white/[0.02] text-neutral-300"
+              className="border-white/[0.04] bg-white/[0.02] text-[10px] text-neutral-500"
             >
-              Energy {track.energy.toFixed(2)}
+              {(track.energy * 100).toFixed(0)}% energy
             </Badge>
           ) : null}
         </div>
         {expanded ? (
-          <div className="rounded-[22px] border border-white/10 bg-black/25 px-4 py-3 text-sm leading-7 text-neutral-300">
+          <div className="rounded-xl border border-white/[0.06] bg-black/30 px-3.5 py-3 text-sm leading-relaxed text-neutral-400">
             {loadingExplanation ? (
-              <div className="flex items-center gap-2 text-neutral-400">
-                <Loader2 className="size-4 animate-spin" />
-                Loading explanation...
+              <div className="flex items-center gap-2 text-neutral-600">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Loading...
               </div>
             ) : explanation ? (
-              <p data-testid="track-explanation">{explanation}</p>
+              <p data-testid="track-explanation" className="text-neutral-300">{explanation}</p>
             ) : (
-              <p className="text-neutral-500">Tap again in a moment.</p>
+              <p className="text-neutral-600">Tap again in a moment.</p>
             )}
           </div>
         ) : (
-          <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-neutral-600 group-hover:text-neutral-500 transition-colors">
             Tap for why this fits
           </p>
         )}
       </CardContent>
-      <CardFooter className="mt-auto flex items-center justify-between gap-2 border-white/10 bg-white/[0.02] px-4 py-4">
-        <div className="flex items-center gap-2">
+      <CardFooter className="mt-auto flex items-center justify-between gap-2 border-t border-white/[0.04] bg-white/[0.01] px-4 py-3.5">
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
             className={
               rating === 1
-                ? "rounded-full border border-emerald-400/40 bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20"
-                : "rounded-full border border-white/10 bg-white/[0.03] text-neutral-200 hover:bg-white/[0.08]"
+                ? "rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                : "rounded-full border border-white/[0.06] bg-white/[0.02] text-neutral-500 hover:border-white/[0.1] hover:text-neutral-400"
             }
             aria-label={`Like ${track.name}`}
             disabled={feedbackPending}
             onClick={() => void submitFeedback(1)}
           >
-            <ThumbsUp className="size-4" />
+            <ThumbsUp className="w-3.5 h-3.5" />
           </Button>
           <Button
             type="button"
@@ -236,14 +234,14 @@ export function TrackCard({
             size="icon-sm"
             className={
               rating === -1
-                ? "rounded-full border border-rose-400/40 bg-rose-400/15 text-rose-200 hover:bg-rose-400/20"
-                : "rounded-full border border-white/10 bg-white/[0.03] text-neutral-200 hover:bg-white/[0.08]"
+                ? "rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                : "rounded-full border border-white/[0.06] bg-white/[0.02] text-neutral-500 hover:border-white/[0.1] hover:text-neutral-400"
             }
             aria-label={`Dislike ${track.name}`}
             disabled={feedbackPending}
             onClick={() => void submitFeedback(-1)}
           >
-            <ThumbsDown className="size-4" />
+            <ThumbsDown className="w-3.5 h-3.5" />
           </Button>
         </div>
         {spotifyUrl ? (
@@ -252,17 +250,17 @@ export function TrackCard({
               <a href={spotifyUrl} target="_blank" rel="noopener noreferrer" />
             }
             size="sm"
-            className="rounded-full bg-white px-4 text-black hover:bg-neutral-200"
+            className="rounded-lg bg-white px-3.5 text-[11px] font-medium text-[#050505] hover:bg-neutral-200"
           >
             Open
-            <ArrowUpRight className="size-4" />
+            <ArrowUpRight className="ml-1.5 w-3 h-3" />
           </Button>
         ) : (
           <Button
             type="button"
             size="sm"
             disabled
-            className="rounded-full bg-white/10 px-4 text-neutral-500"
+            className="rounded-lg bg-white/5 px-3.5 text-[11px] text-neutral-600"
           >
             Unlinked
           </Button>

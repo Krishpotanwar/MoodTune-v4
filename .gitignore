@@ -48,3 +48,6 @@ next-env.d.ts
 .cache/transformers
 supabase/.temp
 .codex-bin
+.codex/
+graphify-out/
+AGENTS.md

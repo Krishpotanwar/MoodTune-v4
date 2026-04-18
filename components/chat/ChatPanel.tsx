@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { MessageList } from "@/components/chat/MessageList";
 import type { ConversationMessage } from "@/components/chat/types";
@@ -10,7 +10,7 @@ import { ChatResponseSchema } from "@/lib/schema";
 
 const SUGGESTIONS = [
   "dark rainy drive",
-  "nostalgic warm sunset",
+  "nostalgic warm sunset", 
   "high energy euphoric dance",
 ];
 
@@ -94,23 +94,27 @@ export function ChatPanel() {
   }
 
   return (
-    <section className="flex h-[72vh] min-h-[680px] flex-col overflow-hidden rounded-[32px] border border-white/10 bg-black/45 shadow-[0_28px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-      <div className="border-b border-white/10 px-5 py-4 sm:px-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0f0f0f]/80 shadow-2xl shadow-black/40 backdrop-blur-xl">
+      {/* Header */}
+      <div className="border-b border-white/[0.06] px-6 py-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
-              Chat
-            </p>
-            <h2 className="text-2xl font-medium tracking-tight text-white">
-              Tell me the feeling. I’ll translate it into tracks.
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400/60" />
+              <p className="text-[11px] uppercase tracking-[0.25em] text-neutral-500 font-medium">
+                Music Chat
+              </p>
+            </div>
+            <h2 className="text-xl font-serif tracking-tight text-white">
+              Tell me the feeling. I&apos;ll translate it into tracks.
             </h2>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {SUGGESTIONS.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-neutral-300 transition hover:bg-white/[0.08]"
+                className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11px] uppercase tracking-[0.12em] text-neutral-400 transition-all hover:border-white/[0.1] hover:bg-white/[0.04] hover:text-neutral-300"
                 onClick={() => setInput(suggestion)}
               >
                 {suggestion}
@@ -120,16 +124,18 @@ export function ChatPanel() {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+      {/* Messages Area */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
         <MessageList messages={messages} pending={pending} />
         <div ref={endRef} />
       </div>
 
+      {/* Input Form */}
       <form
         onSubmit={handleSubmit}
-        className="border-t border-white/10 bg-black/70 px-4 py-4 sm:px-6"
+        className="border-t border-white/[0.06] bg-[#0a0a0a]/50 px-5 py-4"
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
           <label className="sr-only" htmlFor="mood-input">
             What&apos;s the mood?
           </label>
@@ -138,10 +144,10 @@ export function ChatPanel() {
               id="mood-input"
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="What&apos;s the mood?"
+              placeholder="Describe your mood..."
               disabled={pending}
               rows={1}
-              className="min-h-[68px] w-full resize-none rounded-[24px] border border-white/10 bg-white/[0.03] px-5 py-5 text-base leading-7 text-white outline-none transition placeholder:text-neutral-500 focus:border-white/20 focus:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-[60px] w-full resize-none rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5 text-sm text-white placeholder:text-neutral-600 outline-none transition-all focus:border-white/[0.1] focus:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
@@ -154,17 +160,17 @@ export function ChatPanel() {
             type="submit"
             size="lg"
             disabled={pending || !input.trim()}
-            className="h-[68px] rounded-[24px] bg-white px-6 text-sm uppercase tracking-[0.2em] text-black hover:bg-neutral-200 disabled:bg-white/10 disabled:text-neutral-500"
+            className="h-[60px] rounded-xl bg-white px-6 text-xs font-medium uppercase tracking-[0.15em] text-[#050505] hover:bg-neutral-200 disabled:bg-white/10 disabled:text-neutral-600"
           >
             {pending ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
-                Sending
+                <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                Searching
               </>
             ) : (
               <>
                 Send
-                <ArrowUpRight className="size-4" />
+                <ArrowUpRight className="ml-2 w-4 h-4" />
               </>
             )}
           </Button>
