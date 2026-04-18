@@ -10,7 +10,7 @@ import {
   rlKey,
   setRedisValue,
 } from "@/lib/ratelimit";
-import { ensureSession, getSessionId } from "@/lib/session";
+import { ensureSession, getSessionId, createSessionId } from "@/lib/session";
 import { createSupabaseAdminClient } from "@/lib/supabase";
 import {
   buildFallbackTasteProfile,
@@ -182,17 +182,17 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const sessionId = getSessionId(request);
+  let sessionId = getSessionId(request);
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "session_missing" }, { status: 400 });
+  if (!sessionId || sessionId.length < 10) {
+    sessionId = createSessionId();
   }
 
-  await ensureSession(sessionId);
+  const validSessionId = await ensureSession(sessionId);
 
   const rateLimit = await limitOrAllow(
     feedbackRL,
-    rlKey("feedback", sessionId, request),
+    rlKey("feedback", validSessionId, request),
   );
 
   if (!rateLimit.success) {

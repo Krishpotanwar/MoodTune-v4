@@ -4,7 +4,7 @@ import { z } from 'zod/v3';
 import { model, callWithFallback } from "@/lib/gemini";
 import { EXPLAIN_SYSTEM } from "@/lib/prompts";
 import { explainRL, limitOrAllow, rlKey } from "@/lib/ratelimit";
-import { ensureSession, getSessionId } from "@/lib/session";
+import { ensureSession, getSessionId, createSessionId } from "@/lib/session";
 import { createSupabaseAdminClient } from "@/lib/supabase";
 import {
   buildFallbackExplanation,
@@ -50,17 +50,17 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const sessionId = getSessionId(request);
+  let sessionId = getSessionId(request);
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "session_missing" }, { status: 400 });
+  if (!sessionId || sessionId.length < 10) {
+    sessionId = createSessionId();
   }
 
-  await ensureSession(sessionId);
+  const validSessionId = await ensureSession(sessionId);
 
   const rateLimit = await limitOrAllow(
     explainRL,
-    rlKey("explain", sessionId, request),
+    rlKey("explain", validSessionId, request),
   );
 
   if (!rateLimit.success) {

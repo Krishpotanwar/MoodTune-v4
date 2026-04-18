@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from 'zod/v3';
-import { ensureSession, getSessionId } from "@/lib/session";
+import { ensureSession, getSessionId, createSessionId } from "@/lib/session";
 import { createSupabaseAdminClient } from "@/lib/supabase";
 
 export const maxDuration = 30;
@@ -10,19 +10,19 @@ const ProfilePatchSchema = z.object({
 });
 
 export async function GET(request: Request): Promise<Response> {
-  const sessionId = getSessionId(request);
+  let sessionId = getSessionId(request);
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "session_missing" }, { status: 400 });
+  if (!sessionId || sessionId.length < 10) {
+    sessionId = createSessionId();
   }
 
-  await ensureSession(sessionId);
+  const validSessionId = await ensureSession(sessionId);
 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("taste_profiles")
     .select("summary, rating_count, updated_at")
-    .eq("session_id", sessionId)
+    .eq("session_id", validSessionId)
     .maybeSingle();
 
   if (error) {
@@ -54,19 +54,19 @@ export async function PATCH(request: Request): Promise<Response> {
     );
   }
 
-  const sessionId = getSessionId(request);
+  let sessionId = getSessionId(request);
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "session_missing" }, { status: 400 });
+  if (!sessionId || sessionId.length < 10) {
+    sessionId = createSessionId();
   }
 
-  await ensureSession(sessionId);
+  const validSessionId = await ensureSession(sessionId);
 
   const admin = createSupabaseAdminClient();
   const { data: existingProfile, error: existingError } = await admin
     .from("taste_profiles")
     .select("rating_count")
-    .eq("session_id", sessionId)
+    .eq("session_id", validSessionId)
     .maybeSingle();
 
   if (existingError) {
@@ -76,7 +76,7 @@ export async function PATCH(request: Request): Promise<Response> {
   const updatedAt = new Date().toISOString();
   const { error } = await admin.from("taste_profiles").upsert(
     {
-      session_id: sessionId,
+      session_id: validSessionId,
       summary: parsed.data.summary,
       rating_count: existingProfile?.rating_count ?? 0,
       updated_at: updatedAt,

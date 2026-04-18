@@ -6,7 +6,7 @@ import { ChatRequestSchema, ChatResponseSchema } from "@/lib/schema";
 import { CHAT_SYSTEM } from "@/lib/prompts";
 import { limitOrAllow, geminiRL, rlKey } from "@/lib/ratelimit";
 import { searchTracks } from "@/lib/search";
-import { ensureSession, getSessionId } from "@/lib/session";
+import { ensureSession, getSessionId, createSessionId } from "@/lib/session";
 import { createSupabaseAdminClient } from "@/lib/supabase";
 
 export const maxDuration = 60;
@@ -57,15 +57,15 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const sessionId = getSessionId(request);
+  let sessionId = getSessionId(request);
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "session_missing" }, { status: 400 });
+  if (!sessionId || sessionId.length < 10) {
+    sessionId = createSessionId();
   }
 
-  await ensureSession(sessionId);
+  const validSessionId = await ensureSession(sessionId);
 
-  const rateLimit = await limitOrAllow(geminiRL, rlKey("gemini", sessionId, request));
+  const rateLimit = await limitOrAllow(geminiRL, rlKey("gemini", validSessionId, request));
 
   if (!rateLimit.success) {
     return NextResponse.json(
