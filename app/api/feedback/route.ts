@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateObject } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { model, callWithFallback } from "@/lib/gemini";
 import { TASTE_PROFILE_SYSTEM } from "@/lib/prompts";
 import {

@@ -35,7 +35,7 @@ export async function pingGemini(): Promise<boolean> {
   await generateText({
     model,
     prompt: "hi",
-    maxTokens: 1,
+    maxOutputTokens: 1,
   });
 
   return true;

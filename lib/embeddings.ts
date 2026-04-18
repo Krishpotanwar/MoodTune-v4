@@ -86,15 +86,14 @@ function fakeEmbed(text: string): number[] {
 
 async function getExtractor(): Promise<EmbeddingPipeline> {
   if (!extractor) {
-    const createPipeline = pipeline as (...args: unknown[]) => Promise<unknown>;
-
-    extractor = (await createPipeline(
+    const createPipeline = await pipeline(
       "feature-extraction",
       "Xenova/all-MiniLM-L6-v2",
       {
         dtype: "q8",
       },
-    )) as EmbeddingPipeline;
+    );
+    extractor = createPipeline as EmbeddingPipeline;
   }
 
   return extractor;

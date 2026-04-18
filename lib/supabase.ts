@@ -1,8 +1,3 @@
-import {
-  createBrowserClient,
-  createServerClient,
-  type CookieOptions,
-} from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
 export type Json =
@@ -160,49 +155,21 @@ export interface Database {
   };
 }
 
-type ServerCookie = {
-  name: string;
-  value: string;
-  options?: CookieOptions;
-};
-
-type ServerCookieStore = {
-  getAll(): ServerCookie[];
-  setAll(cookies: ServerCookie[]): void;
-};
-
 function getRequiredEnv(name: string): string {
   const value = process.env[name];
 
   if (!value) {
+    // In development, we can provide a more helpful error
+    if (process.env.NODE_ENV === "development") {
+      throw new Error(
+        `Missing required environment variable: ${name}. ` +
+          "Check your .env.local file or Vercel environment variables."
+      );
+    }
     throw new Error(`Missing required environment variable: ${name}`);
   }
 
   return value;
-}
-
-export function createSupabaseBrowserClient() {
-  return createBrowserClient<Database>(
-    getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    getRequiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-  );
-}
-
-export function createSupabaseServerClient(cookieStore: ServerCookieStore) {
-  return createServerClient<Database>(
-    getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    getRequiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookies: ServerCookie[]) {
-          cookieStore.setAll(cookies);
-        },
-      },
-    },
-  );
 }
 
 export function createSupabaseAdminClient() {
@@ -210,6 +177,28 @@ export function createSupabaseAdminClient() {
     getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
     getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
     {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    },
+  );
+}
+
+export function createSupabaseSessionClient(sessionId: string) {
+  if (!sessionId) {
+    throw new Error("Session client requires a session ID.");
+  }
+
+  return createClient<Database>(
+    getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    getRequiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      global: {
+        headers: {
+          "x-session-id": sessionId,
+        },
+      },
       auth: {
         persistSession: false,
         autoRefreshToken: false,

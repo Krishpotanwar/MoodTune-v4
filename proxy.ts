@@ -3,7 +3,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/session";
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const existingSessionId = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const sessionId = existingSessionId ?? crypto.randomUUID();
   const requestHeaders = new Headers(request.headers);
@@ -45,5 +45,4 @@ export const config = {
     "/api/profile/:path*",
     "/api/health/:path*",
   ],
-  runtime: "nodejs",
 };

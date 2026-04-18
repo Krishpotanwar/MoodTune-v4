@@ -3,6 +3,8 @@ import { TrackSchema, type Track } from "@/lib/schema";
 import { createSupabaseAdminClient } from "@/lib/supabase";
 import { l2Normalize, lerpVectors } from "@/lib/vector";
 
+const TASTE_PROFILE_BLEND_ALPHA = 0.3;
+
 export async function searchTracks(opts: {
   query: string;
   sessionId: string | null;
@@ -27,7 +29,9 @@ export async function searchTracks(opts: {
 
     if (data?.summary && data.rating_count >= 3) {
       const tasteEmbedding = await embed(data.summary);
-      combined = l2Normalize(lerpVectors(queryEmbedding, tasteEmbedding, 0.3));
+      combined = l2Normalize(
+        lerpVectors(queryEmbedding, tasteEmbedding, TASTE_PROFILE_BLEND_ALPHA),
+      );
       blendUsed = true;
     }
   }

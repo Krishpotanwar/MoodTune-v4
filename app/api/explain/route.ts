@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateText } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { model, callWithFallback } from "@/lib/gemini";
 import { EXPLAIN_SYSTEM } from "@/lib/prompts";
 import { explainRL, limitOrAllow, rlKey } from "@/lib/ratelimit";
@@ -132,7 +132,7 @@ export async function POST(request: Request): Promise<Response> {
           generateText({
             model,
             system: EXPLAIN_SYSTEM,
-            maxTokens: 80,
+            maxOutputTokens: 80,
             prompt: buildExplainPrompt(track, parsed.data.query, profile?.summary),
           }).then((result) => result.text),
         FALLBACK_EXPLANATION,

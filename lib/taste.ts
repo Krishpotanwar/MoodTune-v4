@@ -127,7 +127,7 @@ export function buildFallbackTasteProfile(opts: {
 
   return [
     `You lean toward ${valenceLabel(likedValence)} ${energyLabel(likedEnergy)} music with a ${tempoLabel(likedTempo)} pulse and ${textureLabel(likedTexture)} texture.`,
-    `Your sessions tend to favor ${opts.liked[0]?.genre ?? "mood-driven"} tracks that feel emotionally specific instead of generic.`,
+    `Your sessions tend to favor ${opts.liked.length > 0 ? (opts.liked[0]?.genre ?? "mood-driven") : "mood-driven"} tracks that feel emotionally specific instead of generic.`,
     `You tend to skip ${valenceLabel(dislikedValence)} ${energyLabel(dislikedEnergy)} songs that push a ${tempoLabel(dislikedTempo)} pace.`,
   ].join(" ");
 }

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { GET } from "@/app/api/health/route";
 
 vi.mock("@/lib/supabase", () => ({

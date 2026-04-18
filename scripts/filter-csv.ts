@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parse } from "csv-parse";
+import { normalizeText } from "@/lib/taste";
 
 type TrackRow = {
   source_id: string;
@@ -24,9 +25,7 @@ const RAW_CSV_PATH =
   path.join(os.homedir(), "Downloads", "spotify_tracks_raw.csv");
 const OUTPUT_PATH = path.join(process.cwd(), "data", "spotify_tracks.csv");
 
-function normalizeText(value: string): string {
-  return value.normalize("NFC").toLowerCase().trim();
-}
+
 
 function parseNumber(value: string | undefined): number | null {
   if (!value?.trim()) {

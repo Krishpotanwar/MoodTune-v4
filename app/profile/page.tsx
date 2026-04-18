@@ -1,21 +1,19 @@
 import { headers } from "next/headers";
 import { TasteProfileCard } from "@/components/profile/TasteProfileCard";
 import { ensureSession, getSessionIdFromHeaders } from "@/lib/session";
-import { createSupabaseAdminClient } from "@/lib/supabase";
+import { createSupabaseSessionClient } from "@/lib/supabase";
 
 async function loadProfileData(sessionId: string) {
-  const admin = createSupabaseAdminClient();
+  const sessionClient = createSupabaseSessionClient(sessionId);
   const [{ data: profile, error: profileError }, { data: feedbackRows, error: feedbackError }] =
     await Promise.all([
-      admin
+      sessionClient
         .from("taste_profiles")
         .select("summary, rating_count, updated_at")
-        .eq("session_id", sessionId)
         .maybeSingle(),
-      admin
+      sessionClient
         .from("feedback")
         .select("track_id, rating, created_at")
-        .eq("session_id", sessionId)
         .order("created_at", { ascending: false })
         .limit(20),
     ]);
@@ -30,7 +28,7 @@ async function loadProfileData(sessionId: string) {
 
   const trackIds = [...new Set((feedbackRows ?? []).map((row) => row.track_id))];
   const { data: tracks, error: trackError } = trackIds.length
-    ? await admin
+    ? await sessionClient
         .from("tracks")
         .select("id, name, artist")
         .in("id", trackIds)
