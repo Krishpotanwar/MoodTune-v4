@@ -1,50 +1,76 @@
-# MoodTune v4
+# MoodTune
 
-MoodTune v4 is a free-tier music recommendation rebuild using Next.js 15, React 19,
-Supabase, Gemini, local Transformers.js embeddings, and Upstash-compatible Redis.
-This Phase 1 scaffold sets up the infrastructure only: migrations, middleware,
-health checks, and test tooling.
+Describe how you feel. Get music that matches.
 
-## Stack
+MoodTune turns emotional language into track recommendations. Tell it "dark rainy drive" or "nostalgic warm sunset" and it finds songs that hit that exact mood — not by genre, but by emotional texture.
 
-- Next.js 15 App Router
-- React 19 + TypeScript 5.6
-- Supabase Postgres + pgvector
-- Google Gemini via AI SDK
-- Transformers.js with a bundled MiniLM q8 model
-- Upstash Redis-compatible rate limiting
-- Vitest + Playwright
+## The Problem
 
-## Free-Tier Notes
+Music apps think in genres. Clubs get EDM. Road trips get classic rock. But what happens when you're in your feels? When "the weather in your head" doesn't match any playlist?
 
-- Vercel Hobby cron jobs support daily cadence only.
-- Upstash Redis local tests in this repo use the SRH proxy from `docker-compose.test.yml`.
-- The embedding model is bundled locally from `public/models/` so health checks
-  can run without remote model downloads.
+We built MoodTune to solve that. It's mood-first music search — describe the feeling, get tracks that match.
 
-## Setup
+## The Stack
 
-1. Install Codex CLI and verify `codex --version`.
-2. Install Supabase CLI: `brew install supabase/tap/supabase`.
-3. Create your Supabase, Upstash Redis, Google AI Studio, and Spotify app credentials.
-4. Install dependencies: `corepack pnpm install`.
-5. Copy `.env.example` to `.env.local` and fill in real values.
-6. For local tests, copy `.env.test.example` to `.env.test`.
-7. Start local Supabase: `corepack pnpm supabase:start`.
-8. Start the local Redis + SRH proxy:
-   `docker compose -f docker-compose.test.yml up -d redis serverless-redis-http`
-9. Apply migrations locally:
-   `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54332/postgres corepack pnpm migrate`
-10. Run the dev server: `corepack pnpm dev`.
+- **Next.js 15** with App Router
+- **Supabase** + pgvector for semantic search
+- **Google Gemini** via AI SDK for understanding intent
+- **Transformers.js** with bundled MiniLM for local embeddings
+- **Upstash Redis** for rate limiting
+- **Tailwind CSS** for styling
+- **Vitest** + **Playwright** for testing
+
+This is a Next.js 15 + React 19 app running on Vercel.
+
+## How It Works
+
+1. You describe a mood or feeling in plain language
+2. Gemini extracts the emotional intent and rewrites it as a search query
+3. pgvector finds tracks with the closest emotional match
+4. Your ratings train a personal taste profile that improves future results
+
+The app uses cookie-backed sessions to remember your taste. Rate a few songs and it starts blending your profile into searches.
+
+## Quick Start
+
+```bash
+# Install
+pnpm install
+
+# Dev server
+pnpm dev
+```
+
+Open http://localhost:3000 and try describing a mood.
+
+## Environment Variables
+
+Required for production:
+
+```
+GOOGLE_GENERATIVE_AI_API_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+```
+
+Add these in Vercel or GitHub Secrets. The app disables rate limiting gracefully if Upstash isn't configured.
 
 ## Commands
 
-- `corepack pnpm dev` starts the Next.js app.
-- `corepack pnpm build` runs the production build.
-- `corepack pnpm test` runs Vitest.
-- `corepack pnpm test:e2e` runs Playwright.
-- `corepack pnpm supabase:start` boots the isolated local Supabase stack on API `:54331` and Postgres `:54332`.
-- `docker compose -f docker-compose.test.yml up -d redis serverless-redis-http`
-  boots the SRH proxy on `:8079` for `@upstash/redis` tests.
-- `corepack pnpm filter` and `corepack pnpm seed` are placeholders until the
-  Phase 2 data pipeline lands.
+```bash
+pnpm dev      # Start dev server
+pnpm build    # Production build
+pnpm test     # Unit + API tests
+pnpm test:e2e  # Playwright e2e
+```
+
+## Design
+
+Premium/editorial aesthetic with Playfair Display for headings, DM Sans for body. Dark theme with high contrast and subtle texture. The vibe is refined, not loud — just like the music it recommends.
+
+---
+
+Built by Krish. Questions? Open an issue.
