@@ -7,7 +7,7 @@ import type { CSSProperties } from "react"
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-      theme="light"
+      theme="dark"
       className="toaster group"
       icons={{
         success: (

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MoodTune v4",
-  description: "Phase 1 scaffold for the free-tier Next.js rebuild.",
+  description: "Mood-first music search with chat, pgvector retrieval, and bundled embeddings.",
 };
 
 export default function RootLayout({

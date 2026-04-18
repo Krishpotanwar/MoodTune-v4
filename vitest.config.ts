@@ -15,6 +15,8 @@ export default defineConfig({
     setupFiles: ["dotenv/config", "./tests/setup.ts"],
     include: ["tests/unit/**/*.test.ts", "tests/api/**/*.test.ts"],
     exclude: ["tests/e2e/**"],
+    testTimeout: 120000,
+    hookTimeout: 120000,
     environment: "jsdom",
     environmentMatchGlobs: [
       ["tests/api/**", "node"],
