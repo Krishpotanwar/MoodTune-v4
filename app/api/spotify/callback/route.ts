@@ -17,7 +17,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       window.close();
     } else {
       var url = new URL(window.location.href);
-      url.pathname = "/";
+      url.pathname = "/studio";
       url.search = payload.code ? "?spotify_code=" + encodeURIComponent(payload.code) : "?spotify_error=" + encodeURIComponent(payload.error);
       window.location.replace(url.toString());
     }

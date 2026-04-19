@@ -11,13 +11,14 @@ import {
   useCallback,
 } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { SpotifyConnect } from "./SpotifyConnect";
 import type { SpotifyTrack } from "@/lib/spotify-client";
+import { playlistIdToHue } from "@/lib/spotify-client";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
-type TrackPoint = SpotifyTrack & { recentlyPlayed?: boolean };
+type TrackPoint = SpotifyTrack & { recentlyPlayed?: boolean; playlistId?: string };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,9 @@ function StarField({ tracks }: { tracks: TrackPoint[] }) {
 
   const trackData = useMemo<TrackData[]>(() =>
     tracks.map((t) => {
-      const hue = lerp(240, 45, t.valence) / 360;
+      const hue = t.playlistId
+        ? playlistIdToHue(t.playlistId)
+        : lerp(240, 45, t.valence) / 360;
       const sat = 0.75 + t.energy * 0.25;
       const lit = t.recentlyPlayed ? 0.92 : clamp(0.55 + t.energy * 0.35, 0.55, 0.88);
       return {
@@ -231,27 +234,43 @@ export function GalaxyCubeHero() {
     };
   }, []);
 
-  // Load demo tracks
+  // Load Kaggle-seeded demo tracks
   useEffect(() => {
-    fetch("/api/spotify/demo")
+    fetch("/api/tracks/sample")
       .then((r) => r.json())
       .then((data: TrackPoint[]) => { if (Array.isArray(data)) setTracks(data); })
       .catch(() => {});
   }, []);
 
-  // Load user tracks after Spotify connect
+  // Load user tracks + playlists after Spotify connect
   const handleSpotifyConnect = useCallback(async (token: string) => {
     setSpotifyToken(token);
-    const { fetchTopTracks, fetchRecentlyPlayed } = await import("@/lib/spotify-client");
-    const [top, recent] = await Promise.all([
+    const { fetchTopTracks, fetchRecentlyPlayed, fetchUserPlaylists, fetchPlaylistTracks } =
+      await import("@/lib/spotify-client");
+
+    const [top, recent, playlists] = await Promise.all([
       fetchTopTracks(token),
       fetchRecentlyPlayed(token),
+      fetchUserPlaylists(token),
     ]);
-    const recentIds = new Set(recent.map((t) => t.id));
-    const merged: TrackPoint[] = [
-      ...recent.map((t) => ({ ...t, recentlyPlayed: true })),
-      ...top.filter((t) => !recentIds.has(t.id)),
-    ];
+
+    const playlistTrackArrays = await Promise.all(
+      playlists.slice(0, 5).map((pl) => fetchPlaylistTracks(pl.id, token)),
+    );
+    const playlistTracks = playlistTrackArrays.flat();
+
+    const seen = new Set<string>();
+    const merged: TrackPoint[] = [];
+    for (const t of recent) {
+      if (!seen.has(t.id)) { seen.add(t.id); merged.push({ ...t, recentlyPlayed: true }); }
+    }
+    for (const t of playlistTracks) {
+      if (!seen.has(t.id)) { seen.add(t.id); merged.push({ ...t, playlistId: t.playlistId }); }
+    }
+    for (const t of top) {
+      if (!seen.has(t.id)) { seen.add(t.id); merged.push(t); }
+    }
+
     setTracks(merged);
     setConnectedCount(merged.length);
   }, []);
@@ -322,13 +341,13 @@ export function GalaxyCubeHero() {
             </p>
 
             <div className="pointer-events-auto mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#studio"
+              <Link
+                href="/studio"
                 className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full border border-white/18 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-neutral-200"
               >
                 Enter The Studio
-                <ArrowDown className="size-4" />
-              </a>
+                <ArrowUpRight className="size-4" />
+              </Link>
               <Link
                 href="/profile"
                 className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-6 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-white/[0.1]"

@@ -9,11 +9,14 @@ export type SpotifyTrack = {
   tempo: number;
   popularity: number;
   recentlyPlayed?: boolean;
+  playlistId?: string;
 };
+
+export type SpotifyPlaylist = { id: string; name: string };
 
 const SPOTIFY_ACCOUNTS = "https://accounts.spotify.com";
 const SPOTIFY_API = "https://api.spotify.com/v1";
-const SCOPES = "user-top-read user-read-recently-played";
+const SCOPES = "user-top-read user-read-recently-played playlist-read-private";
 
 function base64url(buffer: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
@@ -160,4 +163,45 @@ function buildTrack(
     tempo: features?.tempo ?? 120,
     popularity: item.popularity,
   };
+}
+
+export function playlistIdToHue(id: string): number {
+  let hash = 5381;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) + hash) ^ id.charCodeAt(i);
+    hash = hash & hash;
+  }
+  const normalized = Math.abs(hash) / 2147483647;
+  return (normalized * 0.6180339887) % 1.0;
+}
+
+export async function fetchUserPlaylists(token: string): Promise<SpotifyPlaylist[]> {
+  const res = await fetch(`${SPOTIFY_API}/me/playlists?limit=50`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.items ?? []).map((p: { id: string; name: string }) => ({
+    id: p.id,
+    name: p.name,
+  }));
+}
+
+export async function fetchPlaylistTracks(
+  playlistId: string,
+  token: string,
+): Promise<SpotifyTrack[]> {
+  const res = await fetch(
+    `${SPOTIFY_API}/playlists/${playlistId}/tracks?limit=50&fields=items(track(id,name,artists,album(images),popularity))`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) return [];
+  const data = await res.json();
+  const items: SpotifyItem[] = (data.items ?? [])
+    .map((e: { track?: SpotifyItem }) => e.track)
+    .filter((t: SpotifyItem | undefined): t is SpotifyItem => Boolean(t?.id));
+  if (items.length === 0) return [];
+  const ids = items.map((t) => t.id);
+  const features = await getAudioFeatures(ids, token);
+  return items.map((t) => ({ ...buildTrack(t, features[t.id]), playlistId }));
 }
